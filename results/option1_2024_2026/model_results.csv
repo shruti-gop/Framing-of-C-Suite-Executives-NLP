@@ -1,0 +1,4 @@
+Model,Accuracy,AUC
+Logistic Regression,0.502,0.526
+Gradient Boosting,0.502,0.445
+XGBoost,0.505,0.48

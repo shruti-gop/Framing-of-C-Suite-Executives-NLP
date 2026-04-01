@@ -15,23 +15,36 @@ EXECUTIVES = {
     "INTC": {"name": "Pat Gelsinger", "company": "Intel"},
 }
 
-def download_stock_data(start="2018-01-01", end="2023-12-31"):
-    """Download daily OHLCV data for all tickers and compute 5-day forward return."""
+def download_stock_data(start="2024-01-01", end="2026-03-31"):
+    """Download daily stock data for all tickers and compute 5-day forward return."""
     os.makedirs("data/stocks", exist_ok=True)
-    
+
     for ticker, info in EXECUTIVES.items():
         print(f"Downloading {ticker} ({info['company']})...")
-        df = yf.download(ticker, start=start, end=end, auto_adjust=True)
         
-        # Compute 5-day forward return (the prediction target from the paper)
-        df["future_return"] = (df["Close"].shift(-5) - df["Close"]) / df["Close"]
+        df = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
+        
+        # Flatten MultiIndex columns if present
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = [col[0] for col in df.columns]
+        
+        # Reset index so Date becomes a regular column
+        df = df.reset_index()
+        df = df.rename(columns={"Date": "date"})
+        
+        # Keep only what we need
+        df = df[["date", "Close", "Volume"]]
+        df.columns = ["date", "close", "volume"]
+        
+        # Compute 5-day forward return (prediction target from paper)
+        df["future_return"] = (df["close"].shift(-5) - df["close"]) / df["close"]
         df["label"] = (df["future_return"] > 0).astype(int)
         
         df["ticker"] = ticker
         df["executive"] = info["name"]
         df["company"] = info["company"]
         
-        df.to_csv(f"data/stocks/{ticker}.csv")
+        df.to_csv(f"data/stocks/{ticker}.csv", index=False)
         print(f"  Saved {len(df)} rows for {ticker}")
 
 if __name__ == "__main__":
