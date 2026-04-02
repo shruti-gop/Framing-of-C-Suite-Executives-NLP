@@ -15,9 +15,9 @@ EXECUTIVES = {
     "INTC": {"name": "Pat Gelsinger", "company": "Intel"},
 }
 
-def download_stock_data(start="2024-01-01", end="2026-03-31"):
+def download_stock_data(start="2018-01-01", end="2023-12-31", output_dir="data/stocks_2018_2023"):
     """Download daily stock data for all tickers and compute 5-day forward return."""
-    os.makedirs("data/stocks", exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     for ticker, info in EXECUTIVES.items():
         print(f"Downloading {ticker} ({info['company']})...")
@@ -44,7 +44,7 @@ def download_stock_data(start="2024-01-01", end="2026-03-31"):
         df["executive"] = info["name"]
         df["company"] = info["company"]
         
-        df.to_csv(f"data/stocks/{ticker}.csv", index=False)
+        df.to_csv(f"{output_dir}/{ticker}.csv", index=False)
         print(f"  Saved {len(df)} rows for {ticker}")
 
 if __name__ == "__main__":
